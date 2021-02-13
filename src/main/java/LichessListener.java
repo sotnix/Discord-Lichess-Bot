@@ -12,10 +12,9 @@ import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static java.lang.Double.parseDouble;
 
 public class LichessListener implements MessageCreateListener
 {
@@ -39,7 +38,7 @@ public class LichessListener implements MessageCreateListener
         {
             try
             {
-                returnMessage = makeLichessApiRequest( 60, 0);
+                returnMessage = openChallengeRequest( 60, 0);
                 return returnMessage;
             } catch (Exception e)
             {
@@ -53,12 +52,12 @@ public class LichessListener implements MessageCreateListener
             if (parts.length != 2)
                 return returnMessage;
 
-            if( !isNumeric( parts[0] ) || !isNumeric( parts[1] ))
+            if( !Utils.isNumeric( parts[0] ) || !Utils.isNumeric( parts[1] ))
                 return "Failed to parse input - use numbers for clockLimit and clockIncrement or leave blank for default settings(1+0)";
 
             double clockLimitInMinutes = Double.parseDouble( parts[0]);
             double clockIncrementInSeconds = Double.parseDouble( parts[1]);
-            returnMessage = makeLichessApiRequest( (int) (clockLimitInMinutes * 60), (int)clockIncrementInSeconds);
+            returnMessage = openChallengeRequest( (int) (clockLimitInMinutes * 60), (int)clockIncrementInSeconds);
 
             System.out.println(returnMessage);
 
@@ -69,24 +68,15 @@ public class LichessListener implements MessageCreateListener
         return returnMessage;
     }
 
-    public static String makeLichessApiRequest( int clockLimitInSeconds, int clockIncrementInSeconds ) throws Exception
+    public static String openChallengeRequest(int clockLimitInSeconds, int clockIncrementInSeconds ) throws Exception
     {
-        CloseableHttpClient client = HttpClients.createDefault();
-        HttpPost httpPost = new HttpPost("https://lichess.org/api/challenge/open");
-
         List<NameValuePair> params = new ArrayList<>();
         params.add(new BasicNameValuePair("clock.limit", String.valueOf( clockLimitInSeconds)));
         params.add(new BasicNameValuePair("clock.increment", String.valueOf( clockIncrementInSeconds)));
+        //params.add(new BasicNameValuePair("variant", "racingKings"));
 
-        httpPost.setEntity(new UrlEncodedFormEntity(params));
+        JSONObject obj = executeLichessApiRequest( "challenge/open", params);
 
-        CloseableHttpResponse response = client.execute(httpPost);
-        HttpEntity entity = response.getEntity();
-
-        String result = EntityUtils.toString(entity);
-
-        JSONObject obj = new JSONObject(result);
-        client.close();
         try{
             JSONObject challenge = obj.getJSONObject("challenge");
             String url = challenge.getString( "url" );
@@ -95,18 +85,23 @@ public class LichessListener implements MessageCreateListener
         }
         catch ( Exception e)
         {
-            e.printStackTrace();
             return "Invalid time interval. Lichess only supports clockLimits 0/0.25/0.5/0.75/1/1.5/2-180 and increment 1-180";
         }
     }
 
-    public static boolean isNumeric(String str) {
-        try {
-            parseDouble(str);
-            return true;
-        } catch(NumberFormatException e){
-            return false;
-        }
+    public static JSONObject executeLichessApiRequest( String extension, List<NameValuePair> params) throws IOException
+    {
+        CloseableHttpClient client = HttpClients.createDefault();
+        HttpPost httpPost = new HttpPost("https://lichess.org/api/" + extension);
+        httpPost.setEntity(new UrlEncodedFormEntity(params));
+
+
+        CloseableHttpResponse response = client.execute(httpPost);
+        HttpEntity entity = response.getEntity();
+        String result = EntityUtils.toString(entity);
+        client.close();
+
+        return new JSONObject( result );
     }
 }
 

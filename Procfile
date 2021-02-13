@@ -1,1 +1,1 @@
-worker: java -cp target/MyDiscordApp-1.0-SNAPSHOT-jar-with-dependencies.jar MyFirstBot
+worker: java -cp target/MyDiscordApp-1.0-SNAPSHOT-jar-with-dependencies.jar LichessBot

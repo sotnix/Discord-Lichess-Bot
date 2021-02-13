@@ -1,11 +1,12 @@
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 
-public class MyFirstBot {
+public class LichessBot
+{
 
     public static void main(String[] args) {
         // Insert your bot's token here
-        String token = "Nzg3Njk1NTQ4MjY5NTkyNjA2.X9YspQ.D-GPzifXEvv2T13-EvDyfhN1as0";
+        String token = System.getenv("token");
 
         DiscordApi api = new DiscordApiBuilder().setToken(token).login().join();
 
@@ -13,6 +14,12 @@ public class MyFirstBot {
         api.addMessageCreateListener(event -> {
             if (event.getMessageContent().equalsIgnoreCase("!ping")) {
                 event.getChannel().sendMessage("Pong!");
+            }
+        });
+
+        api.addMessageCreateListener(event -> {
+            if (event.getMessageContent().equalsIgnoreCase("!version")) {
+                event.getChannel().sendMessage("1.2");
             }
         });
 
