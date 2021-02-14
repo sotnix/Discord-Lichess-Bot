@@ -38,7 +38,7 @@ public class LichessListener implements MessageCreateListener
         {
             try
             {
-                returnMessage = openChallengeRequest( 60, 0);
+                returnMessage = openChallengeRequest( 60, 0, "");
                 return returnMessage;
             } catch (Exception e)
             {
@@ -57,7 +57,7 @@ public class LichessListener implements MessageCreateListener
 
             double clockLimitInMinutes = Double.parseDouble( parts[0]);
             double clockIncrementInSeconds = Double.parseDouble( parts[1]);
-            returnMessage = openChallengeRequest( (int) (clockLimitInMinutes * 60), (int)clockIncrementInSeconds);
+            returnMessage = openChallengeRequest( (int) (clockLimitInMinutes * 60), (int)clockIncrementInSeconds, "");
 
             System.out.println(returnMessage);
 
@@ -68,12 +68,12 @@ public class LichessListener implements MessageCreateListener
         return returnMessage;
     }
 
-    public static String openChallengeRequest(int clockLimitInSeconds, int clockIncrementInSeconds ) throws Exception
+    public static String openChallengeRequest(int clockLimitInSeconds, int clockIncrementInSeconds, String s) throws Exception
     {
         List<NameValuePair> params = new ArrayList<>();
         params.add(new BasicNameValuePair("clock.limit", String.valueOf( clockLimitInSeconds)));
         params.add(new BasicNameValuePair("clock.increment", String.valueOf( clockIncrementInSeconds)));
-        //params.add(new BasicNameValuePair("variant", "racingKings"));
+        params.add(new BasicNameValuePair("variant", ""));
 
         JSONObject obj = executeLichessApiRequest( "challenge/open", params);
 
